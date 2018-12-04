@@ -10,11 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import br.com.batch.model.SaveItem;
-import br.com.batch.processor.SaveItemProcessor;
-import br.com.batch.readers.SaveItemFieldSetMapper;
-import br.com.batch.readers.SaveItemFlatFileReader;
-import br.com.batch.writers.SaveJdbcBatchItemWriter;
+import br.com.batch.listener.InterceptingJobExecution;
+import br.com.batch.model.Customer;
+import br.com.batch.processor.SaveItemCustomerProcessor;
+import br.com.batch.readers.CustomerItemFieldSetMapper;
+import br.com.batch.readers.CustomerItemFlatFileReader;
+import br.com.batch.writers.SaveCustomerJdbcBatchItemWriter;
 
 @Configuration
 @EnableBatchProcessing
@@ -27,40 +28,32 @@ public class BatchConfiguration {
 	public StepBuilderFactory stepBuilderFactory;
 	
 	@Autowired
-	SaveItemFieldSetMapper saveItemFieldSetMapper;
+	CustomerItemFieldSetMapper saveItemFieldSetMapper;
 	
 	@Autowired
-	SaveItemFlatFileReader saveItemFlatFileReader;
+	CustomerItemFlatFileReader saveItemFlatFileReader;
 	
 	@Autowired
-	SaveJdbcBatchItemWriter saveJdbcBatchItemWriter;
+	SaveCustomerJdbcBatchItemWriter saveJdbcBatchItemWriter;
 	
 	@Autowired
-	SaveItemProcessor saveItemProcessor;
+	SaveItemCustomerProcessor saveItemProcessor;
 	
 	@Autowired
 	InterceptingJobExecution interceptingJobExecution;
-	
+
+
 	
 	@Bean
 	public Step step1() {
 		System.out.println("STEP 1");
-		return stepBuilderFactory.get("step1").<SaveItem,SaveItem>chunk(10)
+		return stepBuilderFactory.get("step1").<Customer,Customer>chunk(10)
 				.reader(saveItemFlatFileReader.getSaveItemFlatFileReader())
-				.processor(saveItemProcessor.getProcess())
-				.writer(saveJdbcBatchItemWriter.getWriter())
+				.processor(saveItemProcessor)
+				.writer(saveJdbcBatchItemWriter)
 				.build();
 	}
 	
-//	@Bean
-//	public Step step2() {
-//		System.out.println("STEP 2");
-//		return stepBuilderFactory.get("step2").<SaveItem,SaveItem>chunk(10)
-//				.reader(saveItemFlatFileReader.getSaveItemFlatFileReader())
-//				.processor(saveItemProcessor.getProcess())
-//				.writer(saveJdbcBatchItemWriter.getWriter())
-//				.build();
-//	}
 	
 	@Bean
 	public Job exportSaveCsvJob() {
